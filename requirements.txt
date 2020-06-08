@@ -1,0 +1,6 @@
+onnxruntime
+Flask
+numpy
+Pillow
+gunicorn
+protobuf
