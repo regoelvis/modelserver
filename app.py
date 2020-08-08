@@ -15,8 +15,11 @@ from utils import utils
 
 app =  Flask(__name__)
 
+model = []
+
 ''' Load the .onnx model and set CUDA as the provider if available'''
-session=onnxruntime.InferenceSession("ssd.onnx")
+session=onnxruntime.InferenceSession("model/ssd.onnx")
+#session.set_providers(['CUDAExecutionProvider'])
 print('Model Loaded')
     
 @app.route('/')
@@ -59,6 +62,7 @@ def predictAndroid():
     print(img.size)
     #img.show()
     img.save('img.png')
+    #img = img.convert('RGB')
     image_size = img.size
     img = img.resize((1200,1200),Image.BILINEAR)
     img = utils.PreProcessImage(img)
@@ -67,3 +71,24 @@ def predictAndroid():
     response = utils.PostProcess(result, image_size)
     
     return response
+    
+@app.route('/predictdesktop',methods = ['POST'])
+def predictdesktop():
+    print(len( request.data))
+    img = Image.open(io.BytesIO(request.data))
+    print(img.size)
+    #img.show()
+    #img.save('img.png')
+    
+    img = img.convert('RGB')
+    image_size = img.size
+    img = img.resize((1200,1200),Image.BILINEAR)
+    img = utils.PreProcessImage(img)
+    
+    result = session.run([],{"image": img})
+    response = utils.PostProcess(result, image_size)
+    
+    return response  
+
+if __name__=='__main__':
+    app.run(host = '0.0.0.0',port= 8001)
